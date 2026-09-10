@@ -31,12 +31,18 @@ class MockGetPopularMovies extends _i1.Mock implements _i4.GetPopularMovies {
 
   @override
   _i2.MovieRepository get repository =>
-      (super.noSuchMethod(Invocation.getter(#repository),
-          returnValue: _FakeMovieRepository()) as _i2.MovieRepository);
+      (super.noSuchMethod(
+            Invocation.getter(#repository),
+            returnValue: _FakeMovieRepository(),
+          )
+          as _i2.MovieRepository);
   @override
   _i5.Future<_i3.Either<_i6.Failure, List<_i7.Movie>>> execute() =>
-      (super.noSuchMethod(Invocation.method(#execute, []),
-          returnValue: Future<_i3.Either<_i6.Failure, List<_i7.Movie>>>.value(
-              _FakeEither<_i6.Failure, List<_i7.Movie>>())) as _i5
-          .Future<_i3.Either<_i6.Failure, List<_i7.Movie>>>);
+      (super.noSuchMethod(
+            Invocation.method(#execute, []),
+            returnValue: Future<_i3.Either<_i6.Failure, List<_i7.Movie>>>.value(
+              _FakeEither<_i6.Failure, List<_i7.Movie>>(),
+            ),
+          )
+          as _i5.Future<_i3.Either<_i6.Failure, List<_i7.Movie>>>);
 }

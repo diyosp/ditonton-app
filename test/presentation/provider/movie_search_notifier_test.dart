@@ -47,31 +47,36 @@ void main() {
   group('search movies', () {
     test('should change state to loading when usecase is called', () async {
       // arrange
-      when(mockSearchMovies.execute(tQuery))
-          .thenAnswer((_) async => Right(tMovieList));
+      when(
+        mockSearchMovies.execute(tQuery),
+      ).thenAnswer((_) async => Right(tMovieList));
       // act
       provider.fetchMovieSearch(tQuery);
       // assert
       expect(provider.state, RequestState.Loading);
     });
 
-    test('should change search result data when data is gotten successfully',
-        () async {
-      // arrange
-      when(mockSearchMovies.execute(tQuery))
-          .thenAnswer((_) async => Right(tMovieList));
-      // act
-      await provider.fetchMovieSearch(tQuery);
-      // assert
-      expect(provider.state, RequestState.Loaded);
-      expect(provider.searchResult, tMovieList);
-      expect(listenerCallCount, 2);
-    });
+    test(
+      'should change search result data when data is gotten successfully',
+      () async {
+        // arrange
+        when(
+          mockSearchMovies.execute(tQuery),
+        ).thenAnswer((_) async => Right(tMovieList));
+        // act
+        await provider.fetchMovieSearch(tQuery);
+        // assert
+        expect(provider.state, RequestState.Loaded);
+        expect(provider.searchResult, tMovieList);
+        expect(listenerCallCount, 2);
+      },
+    );
 
     test('should return error when data is unsuccessful', () async {
       // arrange
-      when(mockSearchMovies.execute(tQuery))
-          .thenAnswer((_) async => Left(ServerFailure('Server Failure')));
+      when(
+        mockSearchMovies.execute(tQuery),
+      ).thenAnswer((_) async => Left(ServerFailure('Server Failure')));
       // act
       await provider.fetchMovieSearch(tQuery);
       // assert

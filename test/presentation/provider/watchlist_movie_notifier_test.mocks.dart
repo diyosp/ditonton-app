@@ -29,8 +29,11 @@ class MockGetWatchlistMovies extends _i1.Mock
 
   @override
   _i4.Future<_i2.Either<_i5.Failure, List<_i6.Movie>>> execute() =>
-      (super.noSuchMethod(Invocation.method(#execute, []),
-          returnValue: Future<_i2.Either<_i5.Failure, List<_i6.Movie>>>.value(
-              _FakeEither<_i5.Failure, List<_i6.Movie>>())) as _i4
-          .Future<_i2.Either<_i5.Failure, List<_i6.Movie>>>);
+      (super.noSuchMethod(
+            Invocation.method(#execute, []),
+            returnValue: Future<_i2.Either<_i5.Failure, List<_i6.Movie>>>.value(
+              _FakeEither<_i5.Failure, List<_i6.Movie>>(),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, List<_i6.Movie>>>);
 }
