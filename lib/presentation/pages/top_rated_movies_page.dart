@@ -1,8 +1,7 @@
-import 'package:ditonton/common/state_enum.dart';
-import 'package:ditonton/presentation/provider/top_rated_movies_notifier.dart';
+import 'package:ditonton/presentation/bloc/movie_list/movie_list_bloc.dart';
 import 'package:ditonton/presentation/widgets/movie_card_list.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TopRatedMoviesPage extends StatefulWidget {
   static const ROUTE_NAME = '/top-rated-movie';
@@ -15,11 +14,8 @@ class _TopRatedMoviesPageState extends State<TopRatedMoviesPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => Provider.of<TopRatedMoviesNotifier>(
-        context,
-        listen: false,
-      ).fetchTopRatedMovies(),
+    context.read<MovieListBloc>().add(
+      const MovieCategoryRequested(MovieCategory.topRated),
     );
   }
 
@@ -29,24 +25,29 @@ class _TopRatedMoviesPageState extends State<TopRatedMoviesPage> {
       appBar: AppBar(title: Text('Top Rated Movies')),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Consumer<TopRatedMoviesNotifier>(
-          builder: (context, data, child) {
-            if (data.state == RequestState.Loading) {
-              return Center(child: CircularProgressIndicator());
-            } else if (data.state == RequestState.Loaded) {
-              return ListView.builder(
+        child: BlocBuilder<MovieListBloc, MovieListState>(
+          buildWhen: (previous, current) =>
+              previous.category(MovieCategory.topRated) !=
+              current.category(MovieCategory.topRated),
+          builder: (context, state) {
+            final categoryState = state.category(MovieCategory.topRated);
+            return switch (categoryState.status) {
+              MovieListStatus.loading => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              MovieListStatus.success => ListView.builder(
                 itemBuilder: (context, index) {
-                  final movie = data.movies[index];
+                  final movie = categoryState.movies[index];
                   return MovieCard(movie);
                 },
-                itemCount: data.movies.length,
-              );
-            } else {
-              return Center(
-                key: Key('error_message'),
-                child: Text(data.message),
-              );
-            }
+                itemCount: categoryState.movies.length,
+              ),
+              MovieListStatus.failure => Center(
+                key: const Key('error_message'),
+                child: Text(categoryState.message),
+              ),
+              _ => const SizedBox.shrink(),
+            };
           },
         ),
       ),

@@ -16,6 +16,15 @@ final class MovieListsRequested extends MovieListEvent {
   const MovieListsRequested();
 }
 
+final class MovieCategoryRequested extends MovieListEvent {
+  const MovieCategoryRequested(this.category);
+
+  final MovieCategory category;
+
+  @override
+  List<Object> get props => [category];
+}
+
 enum MovieCategory { nowPlaying, popular, topRated }
 
 enum MovieListStatus { initial, loading, success, failure }
@@ -62,6 +71,20 @@ class MovieListBloc extends Bloc<MovieListEvent, MovieListState> {
        _getTopRatedMovies = getTopRatedMovies,
        super(const MovieListState()) {
     on<MovieListsRequested>(_onRequested);
+    on<MovieCategoryRequested>(_onCategoryRequested);
+  }
+
+  Future<void> _onCategoryRequested(
+    MovieCategoryRequested event,
+    Emitter<MovieListState> emit,
+  ) async {
+    emit(
+      state.update(
+        event.category,
+        const MovieCategoryState(status: MovieListStatus.loading),
+      ),
+    );
+    await _load(event.category, emit);
   }
 
   final GetNowPlayingMovies _getNowPlayingMovies;

@@ -96,4 +96,28 @@ void main() {
       );
     },
   );
+
+  blocTest<MovieListBloc, MovieListState>(
+    'loads only the requested category',
+    build: () => createBloc(repository),
+    act: (bloc) =>
+        bloc.add(const MovieCategoryRequested(MovieCategory.popular)),
+    expect: () => const [
+      MovieListState(
+        categories: {
+          MovieCategory.popular: MovieCategoryState(
+            status: MovieListStatus.loading,
+          ),
+        },
+      ),
+      MovieListState(
+        categories: {
+          MovieCategory.popular: MovieCategoryState(
+            status: MovieListStatus.success,
+            movies: [movie],
+          ),
+        },
+      ),
+    ],
+  );
 }
