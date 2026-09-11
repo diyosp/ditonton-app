@@ -18,6 +18,7 @@ import 'package:ditonton/presentation/bloc/movie_list/movie_list_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_search/movie_search_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_watchlist/movie_watchlist_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:ditonton/data/network/ssl_pinning_client.dart';
 import 'package:get_it/get_it.dart';
 import 'package:ditonton/data/datasources/tv_local_data_source.dart';
 import 'package:ditonton/data/datasources/tv_remote_data_source.dart';
@@ -31,7 +32,7 @@ import 'package:ditonton/presentation/bloc/tv_watchlist/tv_watchlist_bloc.dart';
 
 final locator = GetIt.instance;
 
-void init() {
+Future<void> init() async {
   locator.registerFactory(
     () => TvListBloc(
       getOnTheAir: locator(),
@@ -125,5 +126,6 @@ void init() {
   locator.registerLazySingleton<DatabaseHelper>(() => DatabaseHelper());
 
   // external
-  locator.registerLazySingleton(() => http.Client());
+  final pinnedClient = await SslPinningClient.create();
+  locator.registerLazySingleton<http.Client>(() => pinnedClient);
 }
