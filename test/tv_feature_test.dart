@@ -18,7 +18,6 @@ import 'package:ditonton/domain/repositories/tv_repository.dart';
 import 'package:ditonton/domain/usecases/tv_use_cases.dart';
 import 'package:ditonton/presentation/provider/tv_detail_notifier.dart';
 import 'package:ditonton/presentation/provider/tv_list_notifier.dart';
-import 'package:ditonton/presentation/provider/tv_search_notifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -379,24 +378,6 @@ void main() {
       await notifier.fetch(1399);
       expect(notifier.state, RequestState.Error);
     });
-
-    test(
-      'search notifier debounces, loads, clears, and reports failure',
-      () async {
-        final notifier = TvSearchNotifier(SearchTv(repository));
-        notifier.search('game');
-        await Future<void>.delayed(const Duration(milliseconds: 550));
-        expect(notifier.state, RequestState.Loaded);
-        expect(notifier.results, [tv]);
-        notifier.search('');
-        expect(notifier.state, RequestState.Empty);
-        repository.listResult = Left(ServerFailure('failed'));
-        notifier.search('error');
-        await Future<void>.delayed(const Duration(milliseconds: 550));
-        expect(notifier.state, RequestState.Error);
-        notifier.dispose();
-      },
-    );
   });
 
   group('TV repository', () {

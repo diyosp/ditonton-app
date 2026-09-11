@@ -28,7 +28,7 @@ import 'package:ditonton/domain/repositories/tv_repository.dart';
 import 'package:ditonton/domain/usecases/tv_use_cases.dart';
 import 'package:ditonton/presentation/provider/tv_detail_notifier.dart';
 import 'package:ditonton/presentation/provider/tv_list_notifier.dart';
-import 'package:ditonton/presentation/provider/tv_search_notifier.dart';
+import 'package:ditonton/presentation/bloc/tv_search/tv_search_bloc.dart';
 import 'package:ditonton/presentation/bloc/tv_watchlist/tv_watchlist_bloc.dart';
 
 final locator = GetIt.instance;
@@ -50,7 +50,7 @@ void init() {
       removeWatchlist: locator(),
     ),
   );
-  locator.registerFactory(() => TvSearchNotifier(locator()));
+  locator.registerFactory(() => TvSearchBloc(locator()));
   locator.registerFactory(() => TvWatchlistBloc(locator()));
   // provider
   locator.registerFactory(

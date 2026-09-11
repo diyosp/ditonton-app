@@ -1,8 +1,7 @@
-import 'package:ditonton/common/state_enum.dart';
-import 'package:ditonton/presentation/provider/tv_search_notifier.dart';
+import 'package:ditonton/presentation/bloc/tv_search/tv_search_bloc.dart';
 import 'package:ditonton/presentation/widgets/tv_card_list.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SearchTvPage extends StatelessWidget {
   const SearchTvPage({super.key});
@@ -10,7 +9,6 @@ class SearchTvPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = context.watch<TvSearchNotifier>();
     return Scaffold(
       appBar: AppBar(title: const Text('Search TV Series')),
       body: Column(
@@ -19,7 +17,8 @@ class SearchTvPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: TextField(
               key: const Key('tv_search_field'),
-              onChanged: notifier.search,
+              onChanged: (query) =>
+                  context.read<TvSearchBloc>().add(TvSearchQueryChanged(query)),
               textInputAction: TextInputAction.search,
               decoration: const InputDecoration(
                 hintText: 'Search title',
@@ -29,17 +28,20 @@ class SearchTvPage extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: switch (notifier.state) {
-              RequestState.Loading => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              RequestState.Error => Center(child: Text(notifier.message)),
-              RequestState.Loaded when notifier.results.isEmpty => const Center(
-                child: Text('No TV series found.'),
-              ),
-              RequestState.Loaded => TvCardList(notifier.results),
-              _ => const Center(child: Text('Find your favorite TV series.')),
-            },
+            child: BlocBuilder<TvSearchBloc, TvSearchState>(
+              builder: (context, state) => switch (state.status) {
+                TvSearchStatus.loading => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                TvSearchStatus.failure => Center(child: Text(state.message)),
+                TvSearchStatus.success when state.results.isEmpty =>
+                  const Center(child: Text('No TV series found.')),
+                TvSearchStatus.success => TvCardList(state.results),
+                TvSearchStatus.initial => const Center(
+                  child: Text('Find your favorite TV series.'),
+                ),
+              },
+            ),
           ),
         ],
       ),
