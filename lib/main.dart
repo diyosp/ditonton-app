@@ -20,7 +20,7 @@ import 'package:ditonton/presentation/pages/tv_category_page.dart';
 import 'package:ditonton/presentation/pages/tv_detail_page.dart';
 import 'package:ditonton/presentation/pages/watchlist_tv_page.dart';
 import 'package:ditonton/presentation/provider/tv_detail_notifier.dart';
-import 'package:ditonton/presentation/provider/tv_list_notifier.dart';
+import 'package:ditonton/presentation/bloc/tv_list/tv_list_bloc.dart';
 import 'package:ditonton/presentation/bloc/tv_search/tv_search_bloc.dart';
 import 'package:ditonton/presentation/bloc/tv_watchlist/tv_watchlist_bloc.dart';
 import 'package:flutter/cupertino.dart';
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => di.locator<WatchlistMovieNotifier>(),
         ),
-        ChangeNotifierProvider(create: (_) => di.locator<TvListNotifier>()),
+        BlocProvider(create: (_) => di.locator<TvListBloc>()),
         ChangeNotifierProvider(create: (_) => di.locator<TvDetailNotifier>()),
         BlocProvider(create: (_) => di.locator<TvSearchBloc>()),
         BlocProvider(create: (_) => di.locator<TvWatchlistBloc>()),

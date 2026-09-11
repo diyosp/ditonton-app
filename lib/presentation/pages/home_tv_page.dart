@@ -1,12 +1,11 @@
 import 'package:ditonton/common/constants.dart';
-import 'package:ditonton/common/state_enum.dart';
+import 'package:ditonton/presentation/bloc/tv_list/tv_list_bloc.dart';
 import 'package:ditonton/presentation/pages/search_tv_page.dart';
 import 'package:ditonton/presentation/pages/tv_category_page.dart';
 import 'package:ditonton/presentation/pages/watchlist_tv_page.dart';
-import 'package:ditonton/presentation/provider/tv_list_notifier.dart';
 import 'package:ditonton/presentation/widgets/tv_card_list.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeTvPage extends StatefulWidget {
   const HomeTvPage({super.key});
@@ -20,7 +19,7 @@ class _HomeTvPageState extends State<HomeTvPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<TvListNotifier>().fetchAll());
+    context.read<TvListBloc>().add(const TvListsRequested());
   }
 
   @override
@@ -40,7 +39,16 @@ class _HomeTvPageState extends State<HomeTvPage> {
       ],
     ),
     body: RefreshIndicator(
-      onRefresh: context.read<TvListNotifier>().fetchAll,
+      onRefresh: () async {
+        final bloc = context.read<TvListBloc>();
+        bloc.add(const TvListsRequested());
+        await bloc.stream.firstWhere(
+          (state) => TvCategory.values.every(
+            (category) =>
+                state.category(category).status != TvListStatus.loading,
+          ),
+        );
+      },
       child: ListView(
         padding: const EdgeInsets.all(8),
         children: TvCategory.values
@@ -63,49 +71,54 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = context.watch<TvListNotifier>();
-    final state = notifier.stateOf(category);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return BlocBuilder<TvListBloc, TvListState>(
+      buildWhen: (previous, current) =>
+          previous.category(category) != current.category(category),
+      builder: (context, state) {
+        final categoryState = state.category(category);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: kHeading6),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(
-                context,
-                TvCategoryPage.routeName,
-                arguments: category,
-              ),
-              child: const Row(
-                children: [
-                  Text('See More'),
-                  Icon(Icons.arrow_forward_ios, size: 16),
-                ],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(title, style: kHeading6),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(
+                    context,
+                    TvCategoryPage.routeName,
+                    arguments: category,
+                  ),
+                  child: const Row(
+                    children: [
+                      Text('See More'),
+                      Icon(Icons.arrow_forward_ios, size: 16),
+                    ],
+                  ),
+                ),
+              ],
             ),
+            if (categoryState.status == TvListStatus.loading)
+              const SizedBox(
+                height: 180,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (categoryState.status == TvListStatus.failure)
+              SizedBox(
+                height: 100,
+                child: Center(child: Text(categoryState.message)),
+              )
+            else if (categoryState.status == TvListStatus.success &&
+                categoryState.items.isEmpty)
+              const SizedBox(
+                height: 100,
+                child: Center(child: Text('No TV series found.')),
+              )
+            else
+              TvHorizontalList(categoryState.items),
           ],
-        ),
-        if (state == RequestState.Loading)
-          const SizedBox(
-            height: 180,
-            child: Center(child: CircularProgressIndicator()),
-          )
-        else if (state == RequestState.Error)
-          SizedBox(
-            height: 100,
-            child: Center(child: Text(notifier.messageOf(category))),
-          )
-        else if (state == RequestState.Loaded &&
-            notifier.itemsOf(category).isEmpty)
-          const SizedBox(
-            height: 100,
-            child: Center(child: Text('No TV series found.')),
-          )
-        else
-          TvHorizontalList(notifier.itemsOf(category)),
-      ],
+        );
+      },
     );
   }
 }

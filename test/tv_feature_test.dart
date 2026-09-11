@@ -17,7 +17,6 @@ import 'package:ditonton/domain/entities/tv_series_detail.dart';
 import 'package:ditonton/domain/repositories/tv_repository.dart';
 import 'package:ditonton/domain/usecases/tv_use_cases.dart';
 import 'package:ditonton/presentation/provider/tv_detail_notifier.dart';
-import 'package:ditonton/presentation/provider/tv_list_notifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -337,26 +336,6 @@ void main() {
       );
       expect((await GetTvWatchlist(repository).execute()).isRight(), isTrue);
     });
-
-    test(
-      'list notifier handles success and failure for every category',
-      () async {
-        final notifier = TvListNotifier(
-          getOnTheAir: GetOnTheAirTv(repository),
-          getPopular: GetPopularTv(repository),
-          getTopRated: GetTopRatedTv(repository),
-        );
-        await notifier.fetchAll();
-        for (final category in TvCategory.values) {
-          expect(notifier.stateOf(category), RequestState.Loaded);
-          expect(notifier.itemsOf(category), [tv]);
-        }
-        repository.listResult = Left(ServerFailure('failed'));
-        await notifier.fetch(TvCategory.popular);
-        expect(notifier.stateOf(TvCategory.popular), RequestState.Error);
-        expect(notifier.messageOf(TvCategory.popular), 'failed');
-      },
-    );
 
     test('detail notifier loads and updates watchlist', () async {
       final notifier = TvDetailNotifier(
