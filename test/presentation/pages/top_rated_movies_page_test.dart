@@ -32,6 +32,11 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
+  testWidgets('displays an empty page before loading starts', (tester) async {
+    await tester.pumpWidget(makePage(const MovieCategoryState()));
+    expect(find.byType(SizedBox), findsWidgets);
+  });
+
   testWidgets('displays list when data is loaded', (tester) async {
     await tester.pumpWidget(
       makePage(const MovieCategoryState(status: MovieListStatus.success)),

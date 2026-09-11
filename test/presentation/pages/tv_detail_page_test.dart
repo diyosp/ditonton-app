@@ -3,6 +3,7 @@ import 'package:ditonton/common/failure.dart';
 import 'package:ditonton/domain/entities/genre.dart';
 import 'package:ditonton/domain/entities/tv_series.dart';
 import 'package:ditonton/domain/entities/tv_series_detail.dart';
+import 'package:ditonton/domain/entities/season.dart';
 import 'package:ditonton/domain/repositories/tv_repository.dart';
 import 'package:ditonton/domain/usecases/tv_use_cases.dart';
 import 'package:ditonton/presentation/bloc/tv_detail/tv_detail_bloc.dart';
@@ -26,19 +27,27 @@ const detail = TvSeriesDetail(
 
 class PageRepository implements TvRepository {
   bool watchlistStatus = false;
+  Either<Failure, TvSeriesDetail> detailResult = const Right(detail);
+  Either<Failure, List<TvSeries>> recommendationResult = const Right([]);
 
   @override
   Future<Either<Failure, TvSeriesDetail>> getDetail(int id) async =>
-      const Right(detail);
+      detailResult;
   @override
   Future<Either<Failure, List<TvSeries>>> getRecommendations(int id) async =>
-      const Right([]);
+      recommendationResult;
   @override
   Future<bool> isAddedToWatchlist(int id) async => watchlistStatus;
   @override
   Future<Either<Failure, String>> saveWatchlist(TvSeriesDetail tv) async {
     watchlistStatus = true;
     return const Right('Added to Watchlist');
+  }
+
+  @override
+  Future<Either<Failure, String>> removeWatchlist(TvSeriesDetail tv) async {
+    watchlistStatus = false;
+    return const Right('Removed from Watchlist');
   }
 
   @override
@@ -78,5 +87,88 @@ void main() {
 
     expect(find.byIcon(Icons.check), findsOneWidget);
     expect(find.text('Added to Watchlist'), findsOneWidget);
+  });
+
+  testWidgets('displays errors from detail and recommendations', (
+    tester,
+  ) async {
+    final repository = PageRepository()
+      ..detailResult = Left(ServerFailure('Detail failed'));
+    final bloc = TvDetailBloc(
+      getDetail: GetTvDetail(repository),
+      getRecommendations: GetTvRecommendations(repository),
+      getWatchlistStatus: GetTvWatchlistStatus(repository),
+      saveWatchlist: SaveTvWatchlist(repository),
+      removeWatchlist: RemoveTvWatchlist(repository),
+    );
+    addTearDown(bloc.close);
+    await tester.pumpWidget(
+      BlocProvider.value(
+        value: bloc,
+        child: const MaterialApp(home: TvDetailPage(id: 1399)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Detail failed'), findsNWidgets(2));
+  });
+
+  testWidgets('displays seasons, recommendations, and removes watchlist', (
+    tester,
+  ) async {
+    const fullDetail = TvSeriesDetail(
+      id: 1399,
+      name: 'Game of Thrones',
+      overview: '',
+      posterPath: null,
+      backdropPath: null,
+      voteAverage: 8.4,
+      genres: [Genre(id: 18, name: 'Drama')],
+      seasons: [
+        Season(
+          id: 1,
+          name: 'Season 1',
+          seasonNumber: 1,
+          episodeCount: 10,
+          overview: '',
+          posterPath: null,
+        ),
+      ],
+      numberOfEpisodes: 10,
+      numberOfSeasons: 1,
+    );
+    final repository = PageRepository()
+      ..watchlistStatus = true
+      ..detailResult = const Right(fullDetail)
+      ..recommendationResult = const Right([
+        TvSeries(
+          id: 2,
+          name: 'Recommended',
+          overview: '',
+          posterPath: null,
+          voteAverage: 8,
+          firstAirDate: '',
+        ),
+      ]);
+    final bloc = TvDetailBloc(
+      getDetail: GetTvDetail(repository),
+      getRecommendations: GetTvRecommendations(repository),
+      getWatchlistStatus: GetTvWatchlistStatus(repository),
+      saveWatchlist: SaveTvWatchlist(repository),
+      removeWatchlist: RemoveTvWatchlist(repository),
+    );
+    addTearDown(bloc.close);
+    await tester.pumpWidget(
+      BlocProvider.value(
+        value: bloc,
+        child: const MaterialApp(home: TvDetailPage(id: 1399)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('No overview available.'), findsOneWidget);
+    expect(find.text('Season 1'), findsOneWidget);
+    expect(find.text('Recommended'), findsNothing);
+    await tester.tap(find.byKey(const Key('tv_watchlist_button')));
+    await tester.pump();
+    expect(find.text('Removed from Watchlist'), findsOneWidget);
   });
 }

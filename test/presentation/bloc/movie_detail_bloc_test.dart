@@ -15,24 +15,26 @@ import '../../dummy_data/dummy_objects.dart';
 
 class DetailRepository implements MovieRepository {
   Either<Failure, MovieDetail> detail = Right(testMovieDetail);
+  Either<Failure, List<Movie>> recommendations = Right(testMovieList);
+  Either<Failure, String> mutation = const Right('Added to Watchlist');
   bool added = false;
   @override
   Future<Either<Failure, MovieDetail>> getMovieDetail(int id) async => detail;
   @override
   Future<Either<Failure, List<Movie>>> getMovieRecommendations(int id) async =>
-      Right(testMovieList);
+      recommendations;
   @override
   Future<bool> isAddedToWatchlist(int id) async => added;
   @override
   Future<Either<Failure, String>> saveWatchlist(MovieDetail movie) async {
-    added = true;
-    return const Right('Added to Watchlist');
+    if (mutation.isRight()) added = true;
+    return mutation;
   }
 
   @override
   Future<Either<Failure, String>> removeWatchlist(MovieDetail movie) async {
-    added = false;
-    return const Right('Removed from Watchlist');
+    if (mutation.isRight()) added = false;
+    return mutation;
   }
 
   @override
@@ -81,6 +83,57 @@ void main() {
     verify: (bloc) {
       expect(bloc.state.isAddedToWatchlist, isTrue);
       expect(bloc.state.watchlistMessage, 'Added to Watchlist');
+    },
+  );
+  blocTest<MovieDetailBloc, MovieDetailState>(
+    'keeps detail visible when recommendations fail',
+    setUp: () => repository.recommendations = Left(ServerFailure('failed')),
+    build: () => createBloc(repository),
+    act: (bloc) => bloc.add(const MovieDetailRequested(1)),
+    verify: (bloc) {
+      expect(bloc.state.status, MovieDetailStatus.success);
+      expect(
+        bloc.state.recommendationStatus,
+        MovieRecommendationStatus.failure,
+      );
+    },
+  );
+  blocTest<MovieDetailBloc, MovieDetailState>(
+    'removes movie from watchlist',
+    setUp: () {
+      repository.added = true;
+      repository.mutation = const Right('Removed from Watchlist');
+    },
+    build: () => createBloc(repository),
+    seed: () => MovieDetailState(
+      status: MovieDetailStatus.success,
+      movie: testMovieDetail,
+      isAddedToWatchlist: true,
+    ),
+    act: (bloc) => bloc.add(const MovieWatchlistRemoved()),
+    verify: (bloc) {
+      expect(bloc.state.isAddedToWatchlist, isFalse);
+      expect(bloc.state.watchlistMessage, 'Removed from Watchlist');
+    },
+  );
+  blocTest<MovieDetailBloc, MovieDetailState>(
+    'does nothing when watchlist action has no loaded movie',
+    build: () => createBloc(repository),
+    act: (bloc) => bloc.add(const MovieWatchlistAdded()),
+    expect: () => const <MovieDetailState>[],
+  );
+  blocTest<MovieDetailBloc, MovieDetailState>(
+    'keeps status and exposes watchlist failure message',
+    setUp: () => repository.mutation = Left(DatabaseFailure('Save failed')),
+    build: () => createBloc(repository),
+    seed: () => MovieDetailState(
+      status: MovieDetailStatus.success,
+      movie: testMovieDetail,
+    ),
+    act: (bloc) => bloc.add(const MovieWatchlistAdded()),
+    verify: (bloc) {
+      expect(bloc.state.isAddedToWatchlist, isFalse);
+      expect(bloc.state.watchlistMessage, 'Save failed');
     },
   );
 }

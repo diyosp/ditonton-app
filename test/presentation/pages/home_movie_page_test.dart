@@ -55,7 +55,12 @@ void main() {
     await tester.pumpWidget(
       BlocProvider.value(
         value: bloc,
-        child: MaterialApp(home: HomeMoviePage()),
+        child: MaterialApp(
+          home: HomeMoviePage(),
+          onGenerateRoute: (settings) => MaterialPageRoute<void>(
+            builder: (_) => Text('Route ${settings.name}'),
+          ),
+        ),
       ),
     );
     await tester.pump();
@@ -65,5 +70,30 @@ void main() {
     expect(find.text('Popular'), findsOneWidget);
     expect(find.text('Top Rated'), findsOneWidget);
     expect(find.text('See More'), findsNWidgets(2));
+
+    await tester.tap(find.text('See More').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Route /popular-movie'), findsOneWidget);
+
+    Navigator.of(tester.element(find.text('Route /popular-movie'))).pop();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('See More').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Route /top-rated-movie'), findsOneWidget);
+  });
+
+  testWidgets('movie poster opens its detail route', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: MovieList(const [PageRepository.item])),
+        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+          builder: (_) => Text('Movie ${settings.arguments}'),
+        ),
+      ),
+    );
+    await tester.tap(find.byType(InkWell));
+    await tester.pumpAndSettle();
+    expect(find.text('Movie 1'), findsOneWidget);
   });
 }

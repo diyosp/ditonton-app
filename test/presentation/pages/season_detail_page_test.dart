@@ -14,7 +14,7 @@ class SeasonRepository implements TvRepository {
       id: 1,
       name: 'Season 1',
       seasonNumber: 1,
-      episodeCount: 1,
+      episodeCount: 2,
       overview: '',
       posterPath: null,
       episodes: [
@@ -25,6 +25,15 @@ class SeasonRepository implements TvRepository {
           overview: 'Episode overview',
           airDate: '2020-01-01',
           voteAverage: 8.5,
+          stillPath: '/still.jpg',
+        ),
+        Episode(
+          id: 11,
+          name: 'Second Episode',
+          episodeNumber: 2,
+          overview: '',
+          airDate: '2020-01-08',
+          voteAverage: 8,
           stillPath: null,
         ),
       ],
@@ -52,9 +61,11 @@ void main() {
         home: SeasonDetailPage(arguments: SeasonArguments(1, 1, 'Season 1')),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
     expect(find.text('1. Pilot'), findsOneWidget);
     expect(find.text('Episode overview'), findsOneWidget);
+    expect(find.text('No overview available.'), findsOneWidget);
     expect(find.textContaining('8.5'), findsOneWidget);
   });
 

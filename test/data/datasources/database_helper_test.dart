@@ -1,4 +1,5 @@
 import 'package:ditonton/data/datasources/db/database_helper.dart';
+import 'package:ditonton/data/datasources/tv_local_data_source.dart';
 import 'package:ditonton/data/models/movie_table.dart';
 import 'package:ditonton/data/models/tv_series_table.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,6 +38,13 @@ void main() {
     expect(await helper.getTvById(3), isNull);
     expect(await helper.getTvWatchlist(), hasLength(1));
     expect(await helper.removeTvWatchlist(tv), 1);
+
+    final source = TvLocalDataSourceImpl(databaseHelper: helper);
+    expect(await source.insertWatchlist(tv), 'Added to Watchlist');
+    expect((await source.getById(2))?.name, 'TV Series');
+    expect(await source.getById(3), isNull);
+    expect(await source.getWatchlist(), hasLength(1));
+    expect(await source.removeWatchlist(tv), 'Removed from Watchlist');
 
     await (await helper.database)?.close();
     await deleteDatabase(path);
