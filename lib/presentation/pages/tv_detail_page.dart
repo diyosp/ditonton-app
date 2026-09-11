@@ -1,13 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ditonton/common/constants.dart';
-import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/domain/entities/tv_series_detail.dart';
+import 'package:ditonton/presentation/bloc/tv_detail/tv_detail_bloc.dart';
 import 'package:ditonton/presentation/pages/season_detail_page.dart';
-import 'package:ditonton/presentation/provider/tv_detail_notifier.dart';
 import 'package:ditonton/presentation/widgets/tv_card_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:provider/provider.dart';
 
 class TvDetailPage extends StatefulWidget {
   const TvDetailPage({super.key, required this.id});
@@ -22,32 +21,40 @@ class _TvDetailPageState extends State<TvDetailPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<TvDetailNotifier>().fetch(widget.id));
+    context.read<TvDetailBloc>().add(TvDetailRequested(widget.id));
   }
 
   @override
   Widget build(BuildContext context) {
-    final notifier = context.watch<TvDetailNotifier>();
-    return Scaffold(
-      body: switch (notifier.state) {
-        RequestState.Loading => const Center(
-          child: CircularProgressIndicator(),
+    return BlocListener<TvDetailBloc, TvDetailState>(
+      listenWhen: (previous, current) =>
+          previous.message != current.message && current.message.isNotEmpty,
+      listener: (context, state) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(state.message))),
+      child: Scaffold(
+        body: BlocBuilder<TvDetailBloc, TvDetailState>(
+          builder: (context, state) => switch (state.status) {
+            TvDetailStatus.loading => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            TvDetailStatus.failure => Center(child: Text(state.message)),
+            TvDetailStatus.success => _DetailContent(
+              detail: state.detail!,
+              state: state,
+            ),
+            _ => const SizedBox.shrink(),
+          },
         ),
-        RequestState.Error => Center(child: Text(notifier.message)),
-        RequestState.Loaded => _DetailContent(
-          detail: notifier.tv!,
-          notifier: notifier,
-        ),
-        _ => const SizedBox.shrink(),
-      },
+      ),
     );
   }
 }
 
 class _DetailContent extends StatelessWidget {
-  const _DetailContent({required this.detail, required this.notifier});
+  const _DetailContent({required this.detail, required this.state});
   final TvSeriesDetail detail;
-  final TvDetailNotifier notifier;
+  final TvDetailState state;
 
   @override
   Widget build(BuildContext context) => CustomScrollView(
@@ -72,19 +79,14 @@ class _DetailContent extends StatelessWidget {
             const SizedBox(height: 10),
             FilledButton.icon(
               key: const Key('tv_watchlist_button'),
-              onPressed: () async {
-                if (notifier.isAddedToWatchlist) {
-                  await notifier.removeFromWatchlist();
+              onPressed: () {
+                if (state.isAddedToWatchlist) {
+                  context.read<TvDetailBloc>().add(const TvWatchlistRemoved());
                 } else {
-                  await notifier.addWatchlist();
-                }
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(notifier.message)));
+                  context.read<TvDetailBloc>().add(const TvWatchlistAdded());
                 }
               },
-              icon: Icon(notifier.isAddedToWatchlist ? Icons.check : Icons.add),
+              icon: Icon(state.isAddedToWatchlist ? Icons.check : Icons.add),
               label: const Text('Watchlist'),
             ),
             const SizedBox(height: 12),
@@ -140,18 +142,18 @@ class _DetailContent extends StatelessWidget {
               'Recommendations',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            if (notifier.recommendationState == RequestState.Loading)
+            if (state.recommendationStatus == TvRecommendationStatus.loading)
               const SizedBox(
                 height: 150,
                 child: Center(child: CircularProgressIndicator()),
               )
-            else if (notifier.recommendations.isEmpty)
+            else if (state.recommendations.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
                 child: Text('No recommendations available.'),
               )
             else
-              TvHorizontalList(notifier.recommendations),
+              TvHorizontalList(state.recommendations),
           ],
         ),
       ),

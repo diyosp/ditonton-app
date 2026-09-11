@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:ditonton/common/exception.dart';
 import 'package:ditonton/common/failure.dart';
-import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/data/datasources/tv_local_data_source.dart';
 import 'package:ditonton/data/datasources/tv_remote_data_source.dart';
 import 'package:ditonton/data/models/tv_series_detail_model.dart';
@@ -16,7 +15,6 @@ import 'package:ditonton/domain/entities/tv_series.dart';
 import 'package:ditonton/domain/entities/tv_series_detail.dart';
 import 'package:ditonton/domain/repositories/tv_repository.dart';
 import 'package:ditonton/domain/usecases/tv_use_cases.dart';
-import 'package:ditonton/presentation/provider/tv_detail_notifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -307,7 +305,7 @@ void main() {
     });
   });
 
-  group('TV use cases and notifiers', () {
+  group('TV use cases', () {
     late FakeTvRepository repository;
     setUp(() => repository = FakeTvRepository());
 
@@ -335,27 +333,6 @@ void main() {
         isTrue,
       );
       expect((await GetTvWatchlist(repository).execute()).isRight(), isTrue);
-    });
-
-    test('detail notifier loads and updates watchlist', () async {
-      final notifier = TvDetailNotifier(
-        getDetail: GetTvDetail(repository),
-        getRecommendations: GetTvRecommendations(repository),
-        getWatchlistStatus: GetTvWatchlistStatus(repository),
-        saveWatchlist: SaveTvWatchlist(repository),
-        removeWatchlist: RemoveTvWatchlist(repository),
-      );
-      await notifier.fetch(1399);
-      expect(notifier.state, RequestState.Loaded);
-      expect(notifier.recommendations, [tv]);
-      await notifier.addWatchlist();
-      expect(notifier.isAddedToWatchlist, isTrue);
-      await notifier.removeFromWatchlist();
-      expect(notifier.isAddedToWatchlist, isFalse);
-
-      repository.detailResult = Left(ServerFailure('failed'));
-      await notifier.fetch(1399);
-      expect(notifier.state, RequestState.Error);
     });
   });
 
