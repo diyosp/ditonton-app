@@ -1,6 +1,8 @@
-# a199-flutter-expert-project
+# Ditonton App
 
-Repository ini merupakan starter project submission kelas Flutter Expert Dicoding Indonesia.
+[![Flutter CI](https://github.com/diyosp/ditonton-app/actions/workflows/flutter_ci.yml/badge.svg)](https://github.com/diyosp/ditonton-app/actions/workflows/flutter_ci.yml)
+
+Aplikasi katalog Movie dan TV Series yang menggunakan data The Movie Database.
 
 ---
 
@@ -49,4 +51,3 @@ Jika kamu menerapkan modular pada project, Anda dapat memanfaatkan berkas `test.
     ```
     Proses ini akan men-*generate* berkas `lcov.info` dan folder `coverage` terkait dengan laporan coverage.
 4. Tunggu proses testing selesai hingga muncul web terkait laporan coverage.
-
