@@ -19,7 +19,6 @@ import 'package:ditonton/domain/usecases/tv_use_cases.dart';
 import 'package:ditonton/presentation/provider/tv_detail_notifier.dart';
 import 'package:ditonton/presentation/provider/tv_list_notifier.dart';
 import 'package:ditonton/presentation/provider/tv_search_notifier.dart';
-import 'package:ditonton/presentation/provider/tv_watchlist_notifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -398,15 +397,6 @@ void main() {
         notifier.dispose();
       },
     );
-
-    test('watchlist notifier handles success and failure', () async {
-      final notifier = TvWatchlistNotifier(GetTvWatchlist(repository));
-      await notifier.fetch();
-      expect(notifier.items, [tv]);
-      repository.listResult = Left(DatabaseFailure('failed'));
-      await notifier.fetch();
-      expect(notifier.state, RequestState.Error);
-    });
   });
 
   group('TV repository', () {

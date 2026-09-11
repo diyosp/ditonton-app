@@ -1,9 +1,8 @@
-import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/common/utils.dart';
-import 'package:ditonton/presentation/provider/tv_watchlist_notifier.dart';
+import 'package:ditonton/presentation/bloc/tv_watchlist/tv_watchlist_bloc.dart';
 import 'package:ditonton/presentation/widgets/tv_card_list.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class WatchlistTvPage extends StatefulWidget {
   const WatchlistTvPage({super.key});
@@ -17,7 +16,7 @@ class _WatchlistTvPageState extends State<WatchlistTvPage> with RouteAware {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<TvWatchlistNotifier>().fetch());
+    context.read<TvWatchlistBloc>().add(const TvWatchlistRequested());
   }
 
   @override
@@ -29,7 +28,7 @@ class _WatchlistTvPageState extends State<WatchlistTvPage> with RouteAware {
 
   @override
   void didPopNext() {
-    context.read<TvWatchlistNotifier>().fetch();
+    context.read<TvWatchlistBloc>().add(const TvWatchlistRequested());
   }
 
   @override
@@ -40,19 +39,21 @@ class _WatchlistTvPageState extends State<WatchlistTvPage> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = context.watch<TvWatchlistNotifier>();
     return Scaffold(
       appBar: AppBar(title: const Text('TV Series Watchlist')),
-      body: switch (notifier.state) {
-        RequestState.Loading => const Center(
-          child: CircularProgressIndicator(),
-        ),
-        RequestState.Error => Center(child: Text(notifier.message)),
-        RequestState.Loaded when notifier.items.isEmpty => const Center(
-          child: Text('Your watchlist is empty.'),
-        ),
-        _ => TvCardList(notifier.items),
-      },
+      body: BlocBuilder<TvWatchlistBloc, TvWatchlistState>(
+        builder: (context, state) => switch (state.status) {
+          TvWatchlistStatus.loading => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          TvWatchlistStatus.failure => Center(child: Text(state.message)),
+          TvWatchlistStatus.success when state.items.isEmpty => const Center(
+            child: Text('Your watchlist is empty.'),
+          ),
+          TvWatchlistStatus.success => TvCardList(state.items),
+          TvWatchlistStatus.initial => const SizedBox.shrink(),
+        },
+      ),
     );
   }
 }

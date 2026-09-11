@@ -4,11 +4,11 @@ import 'package:ditonton/common/failure.dart';
 import 'package:ditonton/domain/entities/tv_series.dart';
 import 'package:ditonton/domain/repositories/tv_repository.dart';
 import 'package:ditonton/domain/usecases/tv_use_cases.dart';
+import 'package:ditonton/presentation/bloc/tv_watchlist/tv_watchlist_bloc.dart';
 import 'package:ditonton/presentation/pages/watchlist_tv_page.dart';
-import 'package:ditonton/presentation/provider/tv_watchlist_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 
 class FakeGetTvWatchlist extends GetTvWatchlist {
   FakeGetTvWatchlist() : super(_UnusedTvRepository());
@@ -34,8 +34,8 @@ void main() {
     final getWatchlist = FakeGetTvWatchlist();
 
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => TvWatchlistNotifier(getWatchlist),
+      BlocProvider(
+        create: (_) => TvWatchlistBloc(getWatchlist),
         child: MaterialApp(
           navigatorObservers: [routeObserver],
           home: const WatchlistTvPage(),
