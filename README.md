@@ -2,52 +2,70 @@
 
 [![Flutter CI](https://github.com/diyosp/ditonton-app/actions/workflows/flutter_ci.yml/badge.svg)](https://github.com/diyosp/ditonton-app/actions/workflows/flutter_ci.yml)
 
-Aplikasi katalog Movie dan TV Series yang menggunakan data The Movie Database.
+Ditonton adalah aplikasi Flutter untuk menampilkan katalog Movie dan TV Series dari The Movie Database (TMDB).
 
----
+## Fitur
 
-## Tips Submission Awal
+- Daftar Movie now playing, popular, dan top rated
+- Daftar TV Series on the air, popular, dan top rated
+- Detail Movie dan TV Series beserta rekomendasi
+- Informasi season dan episode TV Series
+- Pencarian Movie dan TV Series melalui API
+- Watchlist Movie dan TV Series yang tersimpan secara lokal
+- Firebase Analytics dan Crashlytics
+- SSL pinning untuk koneksi menuju API TMDB
 
-Pastikan untuk memeriksa kembali seluruh hasil testing pada submissionmu sebelum dikirimkan. Karena kriteria pada submission ini akan diperiksa setelah seluruh berkas testing berhasil dijalankan.
+## Arsitektur
 
+Source code menerapkan Clean Architecture dengan tiga layer:
 
-## Tips Submission Akhir
+- Domain: entity, repository contract, dan use case
+- Data: model, data source, serta implementasi repository
+- Presentation: halaman, widget, dan state management BLoC
 
-Jika kamu menerapkan modular pada project, Anda dapat memanfaatkan berkas `test.sh` pada repository ini. Berkas tersebut dapat mempermudah proses testing melalui *terminal* atau *command prompt*. Sebelumnya menjalankan berkas tersebut, ikuti beberapa langkah berikut:
-1. Install terlebih dahulu aplikasi sesuai dengan Operating System (OS) yang Anda gunakan.
-    - Bagi pengguna **Linux**, jalankan perintah berikut pada terminal.
-        ```
-        sudo apt-get update -qq -y
-        sudo apt-get install lcov -y
-        ```
-    
-    - Bagi pengguna **Mac**, jalankan perintah berikut pada terminal.
-        ```
-        brew install lcov
-        ```
-    - Bagi pengguna **Windows**, ikuti langkah berikut.
-        - Install [Chocolatey](https://chocolatey.org/install) pada komputermu.
-        - Setelah berhasil, install [lcov](https://community.chocolatey.org/packages/lcov) dengan menjalankan perintah berikut.
-            ```
-            choco install lcov
-            ```
-        - Kemudian cek **Environtment Variabel** pada kolom **System variabels** terdapat variabel GENTHTML dan LCOV_HOME. Jika tidak tersedia, Anda bisa menambahkan variabel baru dengan nilai seperti berikut.
-            | Variable | Value|
-            | ----------- | ----------- |
-            | GENTHTML | C:\ProgramData\chocolatey\lib\lcov\tools\bin\genhtml |
-            | LCOV_HOME | C:\ProgramData\chocolatey\lib\lcov\tools |
-        
-2. Untuk mempermudah proses verifikasi testing, jalankan perintah berikut.
-    ```
-    git init
-    ```
-3. Kemudian jalankan berkas `test.sh` dengan perintah berikut pada *terminal* atau *powershell*.
-    ```
-    test.sh
-    ```
-    atau
-    ```
-    ./test.sh
-    ```
-    Proses ini akan men-*generate* berkas `lcov.info` dan folder `coverage` terkait dengan laporan coverage.
-4. Tunggu proses testing selesai hingga muncul web terkait laporan coverage.
+Dependency injection dikelola menggunakan GetIt.
+
+## Teknologi
+
+- Flutter dan Dart
+- flutter_bloc
+- GetIt
+- Sqflite
+- Firebase Analytics
+- Firebase Crashlytics
+- GitHub Actions
+
+## Menjalankan Aplikasi
+
+Pastikan Flutter stable terbaru sudah terpasang dan perangkat Android telah terhubung.
+
+```bash
+flutter pub get
+flutter run
+```
+
+## Pengujian
+
+Menjalankan seluruh unit dan widget test:
+
+```bash
+flutter test
+```
+
+Menjalankan test sekaligus menghasilkan laporan coverage:
+
+```bash
+flutter test --coverage
+```
+
+Menjalankan integration test pada perangkat yang terhubung:
+
+```bash
+flutter test integration_test/app_flow_test.dart -d <device-id>
+```
+
+Coverage unit dan widget test terakhir mencapai 95,78%.
+
+## Continuous Integration
+
+GitHub Actions dijalankan otomatis pada setiap push dan pull request ke branch `main`. Workflow melakukan pemeriksaan format, static analysis, seluruh unit dan widget test, serta mengunggah laporan coverage sebagai artifact.
