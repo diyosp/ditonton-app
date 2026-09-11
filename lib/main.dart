@@ -10,7 +10,7 @@ import 'package:ditonton/presentation/pages/watchlist_movies_page.dart';
 import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_list/movie_list_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_search/movie_search_bloc.dart';
-import 'package:ditonton/presentation/provider/watchlist_movie_notifier.dart';
+import 'package:ditonton/presentation/bloc/movie_watchlist/movie_watchlist_bloc.dart';
 import 'package:ditonton/presentation/pages/home_tv_page.dart';
 import 'package:ditonton/presentation/pages/search_tv_page.dart';
 import 'package:ditonton/presentation/pages/season_detail_page.dart';
@@ -23,7 +23,6 @@ import 'package:ditonton/presentation/bloc/tv_search/tv_search_bloc.dart';
 import 'package:ditonton/presentation/bloc/tv_watchlist/tv_watchlist_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ditonton/injection.dart' as di;
 
@@ -35,14 +34,12 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
+    return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => di.locator<MovieListBloc>()),
         BlocProvider(create: (_) => di.locator<MovieDetailBloc>()),
         BlocProvider(create: (_) => di.locator<MovieSearchBloc>()),
-        ChangeNotifierProvider(
-          create: (_) => di.locator<WatchlistMovieNotifier>(),
-        ),
+        BlocProvider(create: (_) => di.locator<MovieWatchlistBloc>()),
         BlocProvider(create: (_) => di.locator<TvListBloc>()),
         BlocProvider(create: (_) => di.locator<TvDetailBloc>()),
         BlocProvider(create: (_) => di.locator<TvSearchBloc>()),

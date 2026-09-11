@@ -16,7 +16,7 @@ import 'package:ditonton/domain/usecases/search_movies.dart';
 import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_list/movie_list_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_search/movie_search_bloc.dart';
-import 'package:ditonton/presentation/provider/watchlist_movie_notifier.dart';
+import 'package:ditonton/presentation/bloc/movie_watchlist/movie_watchlist_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:get_it/get_it.dart';
 import 'package:ditonton/data/datasources/tv_local_data_source.dart';
@@ -68,9 +68,7 @@ void init() {
     ),
   );
   locator.registerFactory(() => MovieSearchBloc(locator()));
-  locator.registerFactory(
-    () => WatchlistMovieNotifier(getWatchlistMovies: locator()),
-  );
+  locator.registerFactory(() => MovieWatchlistBloc(locator()));
 
   // use case
   locator.registerLazySingleton(() => GetNowPlayingMovies(locator()));
