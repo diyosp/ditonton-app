@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:ditonton/common/constants.dart';
 import 'package:ditonton/common/utils.dart';
+import 'package:ditonton/firebase_options.dart';
 import 'package:ditonton/presentation/pages/about_page.dart';
 import 'package:ditonton/presentation/pages/movie_detail_page.dart';
 import 'package:ditonton/presentation/pages/home_movie_page.dart';
@@ -24,15 +27,36 @@ import 'package:ditonton/presentation/bloc/tv_watchlist/tv_watchlist_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:ditonton/injection.dart' as di;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   await di.init();
-  runApp(MyApp());
+  runApp(
+    MyApp(
+      analyticsObserver: FirebaseAnalyticsObserver(
+        analytics: FirebaseAnalytics.instance,
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
+  final NavigatorObserver? analyticsObserver;
+
+  const MyApp({super.key, this.analyticsObserver});
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -56,7 +80,7 @@ class MyApp extends StatelessWidget {
           drawerTheme: kDrawerTheme,
         ),
         home: HomeMoviePage(),
-        navigatorObservers: [routeObserver],
+        navigatorObservers: [routeObserver, ?analyticsObserver],
         onGenerateRoute: (RouteSettings settings) {
           switch (settings.name) {
             case '/home':
