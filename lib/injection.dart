@@ -13,7 +13,7 @@ import 'package:ditonton/domain/usecases/get_watchlist_status.dart';
 import 'package:ditonton/domain/usecases/remove_watchlist.dart';
 import 'package:ditonton/domain/usecases/save_watchlist.dart';
 import 'package:ditonton/domain/usecases/search_movies.dart';
-import 'package:ditonton/presentation/provider/movie_detail_notifier.dart';
+import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_list/movie_list_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_search/movie_search_bloc.dart';
 import 'package:ditonton/presentation/provider/watchlist_movie_notifier.dart';
@@ -59,10 +59,10 @@ void init() {
     ),
   );
   locator.registerFactory(
-    () => MovieDetailNotifier(
+    () => MovieDetailBloc(
       getMovieDetail: locator(),
       getMovieRecommendations: locator(),
-      getWatchListStatus: locator(),
+      getWatchlistStatus: locator(),
       saveWatchlist: locator(),
       removeWatchlist: locator(),
     ),

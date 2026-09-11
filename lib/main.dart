@@ -7,7 +7,7 @@ import 'package:ditonton/presentation/pages/popular_movies_page.dart';
 import 'package:ditonton/presentation/pages/search_page.dart';
 import 'package:ditonton/presentation/pages/top_rated_movies_page.dart';
 import 'package:ditonton/presentation/pages/watchlist_movies_page.dart';
-import 'package:ditonton/presentation/provider/movie_detail_notifier.dart';
+import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_list/movie_list_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_search/movie_search_bloc.dart';
 import 'package:ditonton/presentation/provider/watchlist_movie_notifier.dart';
@@ -38,9 +38,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         BlocProvider(create: (_) => di.locator<MovieListBloc>()),
-        ChangeNotifierProvider(
-          create: (_) => di.locator<MovieDetailNotifier>(),
-        ),
+        BlocProvider(create: (_) => di.locator<MovieDetailBloc>()),
         BlocProvider(create: (_) => di.locator<MovieSearchBloc>()),
         ChangeNotifierProvider(
           create: (_) => di.locator<WatchlistMovieNotifier>(),
