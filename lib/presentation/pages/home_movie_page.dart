@@ -75,6 +75,7 @@ class _HomeMoviePageState extends State<HomeMoviePage> {
         title: Text('Ditonton'),
         actions: [
           IconButton(
+            key: const Key('movie_search_action'),
             onPressed: () {
               Navigator.pushNamed(context, SearchPage.ROUTE_NAME);
             },

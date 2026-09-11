@@ -28,10 +28,12 @@ class _HomeTvPageState extends State<HomeTvPage> {
       title: const Text('TV Series'),
       actions: [
         IconButton(
+          key: const Key('tv_search_action'),
           icon: const Icon(Icons.search),
           onPressed: () => Navigator.pushNamed(context, SearchTvPage.routeName),
         ),
         IconButton(
+          key: const Key('tv_watchlist_action'),
           icon: const Icon(Icons.bookmark),
           onPressed: () =>
               Navigator.pushNamed(context, WatchlistTvPage.routeName),
